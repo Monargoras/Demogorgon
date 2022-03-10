@@ -47,7 +47,9 @@ async def move(ctx: SlashContext, message_link: str):
     embed.set_footer(text=origMessage.author.id)
     embed.add_field(name='Moved from', value=origChannel.mention, inline=False)
     embed.add_field(name='Message', value=origMessage.content, inline=False)
-    embed.add_field(name='Notice', value='The original author can delete this by reacting \U0001F5D1', inline=False)
+    embed.add_field(name='Notice',
+                    value='{0.mention} may react \U0001F5D1 to delete this message'.format(origMessage.author),
+                    inline=False)
 
     newMessage = await ctx.send(embed=embed)
     await newMessage.add_reaction('\U0001F5D1')
