@@ -28,8 +28,8 @@ async def on_ready():
                      option_type=interactions.OptionType.STRING
                  )
              ],
-             # TODO add geekhub id 365078454003302400
-             guild_ids=[951200945012875264])
+             # TODO add geekhub id int(os.getenv('GEEKHUB'))
+             guild_ids=[int(os.getenv('TESTGUILD'))])
 async def move(ctx: SlashContext, message_link: str):
 
     messageLinkToCopy = message_link.split('/')
