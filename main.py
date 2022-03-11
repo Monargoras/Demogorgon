@@ -54,8 +54,7 @@ async def move(ctx: SlashContext, message_link: str):
     newMessage = await ctx.send(embed=embed)
     await newMessage.add_reaction('\U0001F5D1')
 
-    # TODO add this after testing
-    # await origMessage.delete()
+    await origMessage.delete()
 
 
 @client.event
