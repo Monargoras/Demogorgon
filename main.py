@@ -83,6 +83,8 @@ async def on_voice_state_update(member, before, after):
     if before.channel is not None and after.channel != before.channel:
         # check if a channel needs to be removed
         category = before.channel.category
+        if not category.name.startswith('/VAR/MAIL/OFF-TOPIC/'):
+            return
         channelList = category.voice_channels
         deletedOffTopic = False
         deletedGaming = False
@@ -124,6 +126,8 @@ async def on_voice_state_update(member, before, after):
         # check if more vc are needed
         guild = after.channel.guild
         category = after.channel.category
+        if not category.name.startswith('/VAR/MAIL/OFF-TOPIC/'):
+            return
         channelList = category.voice_channels
         offTopicFull = True
         offTopicCount = 0
