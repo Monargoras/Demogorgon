@@ -83,77 +83,75 @@ async def on_voice_state_update(member, before, after):
     if before.channel is not None and after.channel != before.channel:
         # check if a channel needs to be removed
         category = before.channel.category
-        if not category.name.startswith('/VAR/MAIL/OFF-TOPIC/'):
-            return
-        channelList = category.voice_channels
-        deletedOffTopic = False
-        deletedGaming = False
-        emptyOffTopicChannels = 0
-        emptyGamingChannels = 0
+        if category.name.startswith('/VAR/MAIL/OFF-TOPIC/'):
+            channelList = category.voice_channels
+            deletedOffTopic = False
+            deletedGaming = False
+            emptyOffTopicChannels = 0
+            emptyGamingChannels = 0
 
-        for channel in channelList:
-            if channel.name.startswith('off-topic/voice_') and len(channel.members) == 0:
-                emptyOffTopicChannels += 1
-            if channel.name.startswith('gaming.voice_') and len(channel.members) == 0:
-                emptyGamingChannels += 1
+            for channel in channelList:
+                if channel.name.startswith('off-topic/voice_') and len(channel.members) == 0:
+                    emptyOffTopicChannels += 1
+                if channel.name.startswith('gaming.voice_') and len(channel.members) == 0:
+                    emptyGamingChannels += 1
 
-        for channel in channelList:
-            if channel.name.startswith('off-topic/voice_') and not channel.name.startswith('off-topic/voice_1'):
-                if len(channel.members) == 0 and emptyOffTopicChannels > 1:
-                    await channel.delete()
-                    deletedOffTopic = True
-                    emptyOffTopicChannels -= 1
-                    continue
+            for channel in channelList:
+                if channel.name.startswith('off-topic/voice_') and not channel.name.startswith('off-topic/voice_1'):
+                    if len(channel.members) == 0 and emptyOffTopicChannels > 1:
+                        await channel.delete()
+                        deletedOffTopic = True
+                        emptyOffTopicChannels -= 1
+                        continue
 
-            if channel.name.startswith('off-topic/voice_') and deletedOffTopic:
-                newID = int(channel.name[-1]) - 1
-                newName = 'off-topic/voice_' + str(newID)
-                await channel.edit(name=newName)
+                if channel.name.startswith('off-topic/voice_') and deletedOffTopic:
+                    newID = int(channel.name[-1]) - 1
+                    newName = 'off-topic/voice_' + str(newID)
+                    await channel.edit(name=newName)
 
-            if channel.name.startswith('gaming.voice_') and not channel.name.startswith('gaming.voice_1'):
-                if len(channel.members) == 0 and emptyGamingChannels > 1:
-                    await channel.delete()
-                    deletedGaming = True
-                    emptyGamingChannels -= 1
-                    continue
+                if channel.name.startswith('gaming.voice_') and not channel.name.startswith('gaming.voice_1'):
+                    if len(channel.members) == 0 and emptyGamingChannels > 1:
+                        await channel.delete()
+                        deletedGaming = True
+                        emptyGamingChannels -= 1
+                        continue
 
-            if channel.name.startswith('gaming.voice_') and deletedGaming:
-                newID = int(channel.name[-1]) - 1
-                newName = 'gaming.voice_' + str(newID)
-                await channel.edit(name=newName)
+                if channel.name.startswith('gaming.voice_') and deletedGaming:
+                    newID = int(channel.name[-1]) - 1
+                    newName = 'gaming.voice_' + str(newID)
+                    await channel.edit(name=newName)
 
     if after.channel is not None and before.channel != after.channel:
         # check if more vc are needed
         guild = after.channel.guild
         category = after.channel.category
-        if not category.name.startswith('/VAR/MAIL/OFF-TOPIC/'):
-            return
-        channelList = category.voice_channels
-        offTopicFull = True
-        offTopicCount = 0
-        gamingFull = True
-        gamingCount = 0
-        for channel in channelList:
-            if channel.name.startswith('off-topic/voice_'):
+        if category.name.startswith('/VAR/MAIL/OFF-TOPIC/'):
+            channelList = category.voice_channels
+            offTopicFull = True
+            offTopicCount = 0
+            gamingFull = True
+            gamingCount = 0
+            for channel in channelList:
+                if channel.name.startswith('off-topic/voice_'):
+                    offTopicCount += 1
+                    if len(channel.members) == 0:
+                        offTopicFull = False
+
+                if channel.name.startswith('gaming.voice_'):
+                    gamingCount += 1
+                    if len(channel.members) == 0:
+                        gamingFull = False
+
+            if offTopicFull and offTopicCount < 5:
                 offTopicCount += 1
-                if len(channel.members) == 0:
-                    offTopicFull = False
+                newChannelNumber = str(offTopicCount)
+                newChannelName = 'off-topic/voice_' + newChannelNumber
+                await guild.create_voice_channel(name=newChannelName, category=category, position=0)
 
-            if channel.name.startswith('gaming.voice_'):
-                gamingCount += 1
-                if len(channel.members) == 0:
-                    gamingFull = False
-
-        if offTopicFull and offTopicCount < 5:
-            offTopicCount += 1
-            newChannelNumber = str(offTopicCount)
-            newChannelName = 'off-topic/voice_' + newChannelNumber
-            await guild.create_voice_channel(name=newChannelName, category=category, position=0)
-
-        if gamingFull and gamingCount < 5:
-            newChannelNumber = str(gamingCount + 1)
-            newChannelName = 'gaming.voice_' + newChannelNumber
-            await guild.create_voice_channel(name=newChannelName, category=category, position=offTopicCount+1)
+            if gamingFull and gamingCount < 5:
+                newChannelNumber = str(gamingCount + 1)
+                newChannelName = 'gaming.voice_' + newChannelNumber
+                await guild.create_voice_channel(name=newChannelName, category=category, position=offTopicCount+1)
 
 
 client.run(os.getenv('TOKEN'))
