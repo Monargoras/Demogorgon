@@ -86,11 +86,21 @@ async def on_voice_state_update(member, before, after):
         channelList = category.voice_channels
         deletedOffTopic = False
         deletedGaming = False
+        emptyOffTopicChannels = 0
+        emptyGamingChannels = 0
+
+        for channel in channelList:
+            if channel.name.startswith('off-topic/voice_') and len(channel.members) == 0:
+                emptyOffTopicChannels += 1
+            if channel.name.startswith('gaming.voice_') and len(channel.members) == 0:
+                emptyGamingChannels += 1
+
         for channel in channelList:
             if channel.name.startswith('off-topic/voice_') and not channel.name.startswith('off-topic/voice_1'):
-                if len(channel.members) == 0:
+                if len(channel.members) == 0 and emptyOffTopicChannels > 1:
                     await channel.delete()
                     deletedOffTopic = True
+                    emptyOffTopicChannels -= 1
                     continue
 
             if channel.name.startswith('off-topic/voice_') and deletedOffTopic:
@@ -99,9 +109,10 @@ async def on_voice_state_update(member, before, after):
                 await channel.edit(name=newName)
 
             if channel.name.startswith('gaming.voice_') and not channel.name.startswith('gaming.voice_1'):
-                if len(channel.members) == 0:
+                if len(channel.members) == 0 and emptyGamingChannels > 1:
                     await channel.delete()
                     deletedGaming = True
+                    emptyGamingChannels -= 1
                     continue
 
             if channel.name.startswith('gaming.voice_') and deletedGaming:
