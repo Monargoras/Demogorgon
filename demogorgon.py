@@ -1,16 +1,10 @@
 import discord
-import interactions
-from discord.ext import commands
-from discord_slash import SlashCommand, SlashContext
-from discord_slash.utils.manage_commands import create_option
 import os
 
 
 intents = discord.Intents.default()
-intents.reactions = True
 
-client = commands.Bot(command_prefix='$', intents=intents)
-slash = SlashCommand(client, sync_commands=True)
+client = discord.Bot(intents=intents)
 
 
 @client.event
@@ -18,19 +12,13 @@ async def on_ready():
     print('We have logged in as {0.user}'.format(client))
 
 
-@slash.slash(name='move',
-             description='Move the message to the channel the command is used in, deletes original',
-             options=[
-                 create_option(
-                     name='message_link',
-                     description='Link to message that will be moved',
-                     required=True,
-                     option_type=interactions.OptionType.STRING
-                 )
-             ],
-             # TODO add geekhub id int(os.getenv('GEEKHUB'))
-             guild_ids=[int(os.getenv('TESTGUILD'))])
-async def move(ctx: SlashContext, message_link: str):
+@client.slash_command(
+    name='move',
+    description='Move the message to the channel the command is used in, deletes original',
+    # TODO add geekhub id int(os.getenv('GEEKHUB'))
+    guild_ids=[int(os.getenv('TESTGUILD'))]
+)
+async def move(ctx: discord.ApplicationContext, message_link: discord.Option(str, "Link to message that will be moved")):
 
     messageLinkToCopy = message_link.split('/')
     serverId = int(messageLinkToCopy[4])
@@ -43,7 +31,7 @@ async def move(ctx: SlashContext, message_link: str):
 
     embed = discord.Embed(timestamp=origMessage.created_at)
     embed.set_author(name=origMessage.author.name + '#' + origMessage.author.discriminator,
-                     icon_url=origMessage.author.avatar_url)
+                     icon_url=origMessage.author.avatar)
     embed.set_footer(text=origMessage.author.id)
     embed.add_field(name='Moved from', value=origChannel.mention, inline=False)
     if origMessage.content:
@@ -56,6 +44,8 @@ async def move(ctx: SlashContext, message_link: str):
     await newMessage.add_reaction('\U0001F5D1')
 
     await origMessage.delete()
+
+    await ctx.interaction.response.defer(ephemeral=True)
 
 
 @client.event
@@ -78,7 +68,7 @@ async def on_raw_reaction_add(payload):
 
 
 @client.event
-async def on_voice_state_update(member, before, after):
+async def on_voice_state_update(_, before, after):
 
     if before.channel is not None and after.channel != before.channel:
         # check if a channel needs to be removed
