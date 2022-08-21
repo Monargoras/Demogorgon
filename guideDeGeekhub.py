@@ -11,22 +11,31 @@ async def on_ready():
     print('We have logged in as {0.user}'.format(client))
 
 
-async def updateVote(button, interaction):
+async def addVote(button, interaction):
     category = interaction.message.content.split(' ')[0]
     rating = interaction.message.content.split(' ')[2]
     newRating = int(rating.split(':')[0]) + int(button.label)
     votes = interaction.message.content.split(' ')[4]
     newVotes = int(votes) + 1
     await interaction.message.edit(content='{cat} ----- {newR}:star: ----- {votes} Votes'.format(cat=category, newR=newRating, votes=newVotes))
-    await interaction.response.defer(invisible=True)
+    await interaction.response.send_message('Your vote: {cat} - {r}'.format(cat=category, r=int(button.label)), ephemeral=True)
+
+
+async def updateVote(button, interaction, oldVote: int):
+    category = interaction.message.content.split(' ')[0]
+    rating = interaction.message.content.split(' ')[2]
+    newRating = int(rating.split(':')[0]) - oldVote + int(button.label)
+    votes = interaction.message.content.split(' ')[4]
+    await interaction.message.edit(content='{cat} ----- {newR}:star: ----- {votes} Votes'.format(cat=category, newR=newRating, votes=votes))
+    await interaction.response.send_message('Your vote: {cat} - {r}'.format(cat=category, r=int(button.label)), ephemeral=True)
 
 
 class ButtonView(discord.ui.View):
-    users = []
+    users = {}
 
     def __init__(self):
         super().__init__(timeout=600)
-        self.users = []
+        self.users = {}
 
     async def on_timeout(self):
         for child in self.children:
@@ -43,43 +52,43 @@ class ButtonView(discord.ui.View):
 
     @discord.ui.button(label='1', style=discord.ButtonStyle.danger)
     async def button1_callback(self, button, interaction):
-        if interaction.user.id in self.users:
-            await interaction.response.defer(invisible=True)
+        if interaction.user.id in self.users.keys():
+            await updateVote(button, interaction, self.users[interaction.user.id])
         else:
-            self.users.append(interaction.user.id)
-            await updateVote(button, interaction)
+            await addVote(button, interaction)
+        self.users[interaction.user.id] = int(button.label)
 
     @discord.ui.button(label='2', style=discord.ButtonStyle.danger)
     async def button2_callback(self, button, interaction):
-        if interaction.user.id in self.users:
-            await interaction.response.defer(invisible=True)
+        if interaction.user.id in self.users.keys():
+            await updateVote(button, interaction, self.users[interaction.user.id])
         else:
-            self.users.append(interaction.user.id)
-            await updateVote(button, interaction)
+            await addVote(button, interaction)
+        self.users[interaction.user.id] = int(button.label)
 
     @discord.ui.button(label='3', style=discord.ButtonStyle.primary)
     async def button3_callback(self, button, interaction):
-        if interaction.user.id in self.users:
-            await interaction.response.defer(invisible=True)
+        if interaction.user.id in self.users.keys():
+            await updateVote(button, interaction, self.users[interaction.user.id])
         else:
-            self.users.append(interaction.user.id)
-            await updateVote(button, interaction)
+            await addVote(button, interaction)
+        self.users[interaction.user.id] = int(button.label)
 
     @discord.ui.button(label='4', style=discord.ButtonStyle.success)
     async def button4_callback(self, button, interaction):
-        if interaction.user.id in self.users:
-            await interaction.response.defer(invisible=True)
+        if interaction.user.id in self.users.keys():
+            await updateVote(button, interaction, self.users[interaction.user.id])
         else:
-            self.users.append(interaction.user.id)
-            await updateVote(button, interaction)
+            await addVote(button, interaction)
+        self.users[interaction.user.id] = int(button.label)
 
     @discord.ui.button(label='5', style=discord.ButtonStyle.success)
     async def button5_callback(self, button, interaction):
-        if interaction.user.id in self.users:
-            await interaction.response.defer(invisible=True)
+        if interaction.user.id in self.users.keys():
+            await updateVote(button, interaction, self.users[interaction.user.id])
         else:
-            self.users.append(interaction.user.id)
-            await updateVote(button, interaction)
+            await addVote(button, interaction)
+        self.users[interaction.user.id] = int(button.label)
 
 
 @client.slash_command(
