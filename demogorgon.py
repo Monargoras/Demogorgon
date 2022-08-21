@@ -40,12 +40,11 @@ async def move(ctx: discord.ApplicationContext, message_link: discord.Option(str
                     value='{0.mention} may react \U0001F5D1 to delete this message'.format(origMessage.author),
                     inline=False)
 
-    newMessage = await ctx.send(embed=embed, files=[await f.to_file() for f in origMessage.attachments])
+    interaction = await ctx.interaction.response.send_message(embed=embed, files=[await f.to_file() for f in origMessage.attachments])
+    newMessage = await interaction.original_message()
     await newMessage.add_reaction('\U0001F5D1')
 
     await origMessage.delete()
-
-    await ctx.interaction.response.defer(ephemeral=True)
 
 
 @client.event
